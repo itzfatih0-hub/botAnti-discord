@@ -16,6 +16,8 @@ const {
 const app = express();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(express.static('public'));
+app.use(express.static(__dirname));
 
 const PORT = process.env.PORT || 3000;
 const DASHBOARD_KEY = process.env.DASHBOARD_KEY || '';
@@ -125,7 +127,7 @@ function getGuild(id) {
     g.raid.enabled ??= false;
     g.raid.threshold ??= 6;
     g.raid.windowMs ??= 10000;
-    g.raid.lockMs ??= 300000;
+    g.raid.lockMs ??= 500000;
     g.raid.newAccountAgeMs ??= 86400000;
 
     return g;
@@ -230,7 +232,8 @@ function renderLogin(error = '') {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ben Bot Dashboard</title>
+<title>Ben D Bot Dashboard</title>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
 <style>
 body{font-family:Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:0;padding:40px}
 .card{max-width:520px;margin:auto;background:#111827;padding:24px;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.35)}
@@ -240,9 +243,10 @@ small{color:#94a3b8}
 .err{color:#fca5a5}
 </style>
 </head>
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
 <body>
 <div class="card">
-<h1>💀 Ben Bot Dashboard</h1>
+<h1>💀 Ben D Bot Dashboard</h1>
 <p>Masukkan dashboard key untuk buka panel.</p>
 ${error ? `<p class="err">${escapeHtml(error)}</p>` : ''}
 <form method="GET" action="/">
@@ -278,6 +282,18 @@ function renderDashboard(guildId, key) {
 <style>
 body{font-family:Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:0}
 .wrap{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
+h1,h2,h3 {
+  letter-spacing: 0.5px;
+}
+
+button:hover {
+  background:#1d4ed8;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+  transition: 0.2s;
+}
 .sidebar{background:#111827;padding:20px;border-right:1px solid #1f2937}
 .main{padding:24px}
 .card{background:#111827;padding:20px;border-radius:18px;box-shadow:0 12px 40px rgba(0,0,0,.35);margin-bottom:18px}
@@ -296,7 +312,7 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
 <body>
 <div class="wrap">
   <div class="sidebar">
-    <h2>💀 Ben Bot</h2>
+    <h2>💀 Ben D Bot</h2>
     <p><span class="badge">Railway</span><span class="badge">Free</span></p>
     <p><small>Selected Guild</small><br>${guild ? escapeHtml(guild.name) : 'None'}</p>
     <hr>
@@ -305,6 +321,13 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
   </div>
 
   <div class="main">
+   <div class="card">
+     <h2>👑 Owner Panel</h2>
+     <p><b>Status:</b> ${client.user ? '🟢 ONLINE' : '🔴 OFFLINE'}</p>
+     <p><b>Bot:</b> ${client.user?.tag || 'Unknown'}</p>
+     <p><b>Servers:</b> ${client.guilds.cache.size}</p>
+   </div>
+
     <div class="card">
       <h2>Settings</h2>
       <form method="POST" action="/save">
@@ -629,7 +652,7 @@ function buildCommands() {
             ),
 
         new SlashCommandBuilder()
-            .setName('personal')
+            .setName('persona')
             .setDescription('Set AI personality')
             .addStringOption(o =>
                 o.setName('style')
@@ -795,6 +818,7 @@ client.on('messageDelete', msg => {
 // SLASH HANDLER
 // =====================
 client.on('interactionCreate', async i => {
+    if (!i.guildId) return;
     if (!i.isChatInputCommand()) return;
 
     const g = getGuild(i.guildId);
@@ -1082,6 +1106,9 @@ client.on('messageCreate', async msg => {
         // Memory
         user.memory.push(content);
         if (user.memory.length > 8) user.memory.shift();
+        
+        user.recentMessages.push(content);
+        if (user.recentMessages.length > 3) user.recentMessages.shift();
 
         // XP / MONEY
         user.xp += 5;
@@ -1093,7 +1120,7 @@ client.on('messageCreate', async msg => {
             const fresh = getUser(msg.author.id);
             fresh.spam = 0;
             saveDB();
-        }, 3000);
+        }, 5000);
 
         // Auto level message
         if (user.xp % 100 < 5) {
@@ -1107,8 +1134,8 @@ client.on('messageCreate', async msg => {
             const low = content.toLowerCase();
             const logCh = g.logChannel ? msg.guild.channels.cache.get(g.logChannel) : null;
 
-            if (g.automod.antiSpam && user.spam >= 6 && msg.member?.moderatable) {
-                await msg.member.timeout(300000).catch(() => {});
+            if (g.automod.antiSpam && user.spam >= 3 && msg.member?.moderatable) {
+                await msg.member.timeout(500000).catch(() => {});
                 if (logCh) logCh.send(`🚫 Spam: ${msg.author.tag}`).catch(() => {});
                 return msg.channel.send(`🚫 ${msg.author} spam`).catch(() => {});
             }
@@ -1200,7 +1227,7 @@ client.on('messageCreate', async msg => {
             return msg.reply(chatAI(text, user.memory, g.personality));
         }
 
-        if (cmd === 'persona') {
+        if (cmd === 'personal') {
             if (!msg.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
                 return msg.reply('❌ Admin only.');
             }
