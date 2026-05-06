@@ -151,39 +151,27 @@ function escapeHtml(str = '') {
 async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
 
-    // system persona
     let systemPrompt = "Kamu adalah AI Discord yang santai, pintar, dan membantu.";
     if (persona === 'formal') systemPrompt = "Kamu AI formal dan profesional.";
     if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas.";
     if (persona === 'friendly') systemPrompt = "Kamu AI ramah dan santai.";
 
-    // push user message
+    // simpan memory
     user.memory.push({ role: "user", content: text });
-
-    // limit memory
     if (user.memory.length > 12) user.memory.shift();
 
     try {
-        const res = await axios.post(
-            "https://api.openai.com/v1/chat/completions",
-            {
-                model: "gpt-4o-mini",
-                messages: [
-                    { role: "system", content: systemPrompt },
-                    ...user.memory
-                ]
-            },
-            {
-                headers: {
-                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
-                    "Content-Type": "application/json"
-                }
-            }
-        );
+        const res = await axios.post("http://localhost:11434/api/chat", {
+            model: "phi3:mini"
+            messages: [
+                { role: "system", content: systemPrompt },
+                ...user.memory
+            ],
+            stream: false
+        });
 
-        const reply = res.data.choices[0].message.content;
+        const reply = res.data.message.content;
 
-        // simpan reply AI
         user.memory.push({ role: "assistant", content: reply });
 
         saveDB();
@@ -191,7 +179,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
 
     } catch (err) {
         console.log(err.response?.data || err.message);
-        return "AI error 😭";
+        return "Ollama error 😭 (cek apakah ollama sudah jalan)";
     }
 }
 
