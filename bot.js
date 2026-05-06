@@ -162,7 +162,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
 
     try {
         const res = await axios.post("http://localhost:11434/api/chat", {
-            model: "phi3:mini"
+            model: "phi3:mini",
             messages: [
                 { role: "system", content: systemPrompt },
                 ...user.memory
