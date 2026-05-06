@@ -1,4 +1,5 @@
 require('dotenv').config();
+const axios = require('axios');
 const fs = require('fs');
 const express = require('express');
 const path = require('path');
@@ -147,40 +148,51 @@ function escapeHtml(str = '') {
         .replace(/'/g, '&#39;');
 }
 
-function chatBase(text, memory = []) {
-    const t = text.toLowerCase();
-    const last = memory[memory.length - 1] || '';
+async function chatAIReal(userId, text, persona = 'chill') {
+    const user = getUser(userId);
 
-    if (t.includes('halo') || t.includes('hai')) return pick(['halo 😄', 'hai juga 😎', 'yo 🔥']);
-    if (t.includes('siapa kamu')) return 'gue Ben Bot 😈';
-    if (t.includes('apa kabar')) return pick(['baik 😄', 'aman', 'lagi santai']);
-    if (t.includes('capek')) return pick(['istirahat dulu 😌', 'jangan dipaksa']);
-    if (last.includes('halo')) return pick(['iya?', 'ada apa?', 'kenapa?']);
+    // system persona
+    let systemPrompt = "Kamu adalah AI Discord yang santai, pintar, dan membantu.";
+    if (persona === 'formal') systemPrompt = "Kamu AI formal dan profesional.";
+    if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas.";
+    if (persona === 'friendly') systemPrompt = "Kamu AI ramah dan santai.";
 
-    return pick(['menarik...', 'lanjut 😈', 'gue dengerin', 'oh gitu']);
-}
+    // push user message
+    user.memory.push({ role: "user", content: text });
 
-function applyPersona(reply, persona) {
-    switch ((persona || 'chill').toLowerCase()) {
-        case 'formal':
-            return `Tentu. ${reply}`;
-        case 'friendly':
-            return `Okeee, ${reply}`;
-        case 'funny':
-            return pick([
-                `Wkwk ${reply}`,
-                `Hmm... ${reply}`,
-                `Haha ${reply}`
-            ]);
-        case 'chill':
-        default:
-            return reply;
+    // limit memory
+    if (user.memory.length > 12) user.memory.shift();
+
+    try {
+        const res = await axios.post(
+            "https://api.openai.com/v1/chat/completions",
+            {
+                model: "gpt-4o-mini",
+                messages: [
+                    { role: "system", content: systemPrompt },
+                    ...user.memory
+                ]
+            },
+            {
+                headers: {
+                    Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
+
+        const reply = res.data.choices[0].message.content;
+
+        // simpan reply AI
+        user.memory.push({ role: "assistant", content: reply });
+
+        saveDB();
+        return reply;
+
+    } catch (err) {
+        console.log(err.response?.data || err.message);
+        return "AI error 😭";
     }
-}
-
-function chatAI(text, memory = [], persona = 'chill') {
-    const base = chatBase(text, memory);
-    return applyPersona(base, persona);
 }
 
 function extractUrls(text) {
@@ -856,7 +868,9 @@ client.on('interactionCreate', async i => {
 
     if (i.commandName === 'ai') {
         const user = getUser(i.user.id);
-        return i.reply(chatAI(i.options.getString('text'), user.memory, g.personality));
+        await i.deferReply();
+        const reply = await chatAIReal(i.user.id, i.options.getString('text'), g.personality);
+        return i.editReply(reply);
     }
 
     if (i.commandName === 'rank') {
@@ -1094,17 +1108,14 @@ client.on('messageCreate', async msg => {
 
         // DM AI
         if (!msg.guild) {
-            user.memory.push(content);
-            if (user.memory.length > 8) user.memory.shift();
-            saveDB();
-            return msg.reply(chatAI(content, user.memory, 'chill'));
+        const reply = await chatAIReal(msg.author.id, content, 'chill');
+        return msg.reply(reply);
         }
 
         const g = getGuild(msg.guild.id);
         const prefix = g.prefix;
 
         // Memory
-        user.memory.push(content);
         if (user.memory.length > 8) user.memory.shift();
         
         user.recentMessages.push(content);
@@ -1178,7 +1189,9 @@ client.on('messageCreate', async msg => {
 
         // Mention AI
         if (msg.mentions.has(client.user)) {
-            return msg.reply(chatAI(content, user.memory, g.personality));
+         await msg.channel.sendTyping();
+         const reply = await chatAIReal(msg.author.id, content, g.personality);
+         return msg.reply(reply);
         }
 
         if (!content.startsWith(prefix)) return;
@@ -1224,7 +1237,9 @@ client.on('messageCreate', async msg => {
         if (cmd === 'ai') {
             const text = args.join(' ');
             if (!text) return msg.reply('Tulis sesuatu dulu.');
-            return msg.reply(chatAI(text, user.memory, g.personality));
+            await msg.channel.sendTyping();
+            const reply = await chatAIReal(msg.author.id, text, g.personality);
+            return msg.reply(reply);
         }
 
         if (cmd === 'personal') {
