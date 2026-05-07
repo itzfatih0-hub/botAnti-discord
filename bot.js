@@ -4,6 +4,8 @@ const fs = require('fs');
 const express = require('express');
 const path = require('path');
 const os = require('os');
+const Canvas = require('canvas');
+const { AttachmentBuilder } = require('discord.js');
 const {
     Client,
     GatewayIntentBits,
@@ -222,6 +224,79 @@ function remind(user, text, ms) {
     setTimeout(() => {
         user.send(`⏰ Reminder: ${text}`).catch(() => {});
     }, ms);
+}
+
+async function createRankCard(user, level, xp, nextLevelXp) {
+    const canvas = Canvas.createCanvas(900, 260);
+    const ctx = canvas.getContext('2d');
+
+    // Background
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    // Card
+    ctx.fillStyle = '#111827';
+    roundRect(ctx, 20, 20, 860, 220, 20, true);
+
+    // Avatar
+    const avatar = await Canvas.loadImage(
+        user.displayAvatarURL({ extension: 'png', size: 256 })
+    );
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(120, 130, 70, 0, Math.PI * 2);
+    ctx.closePath();
+    ctx.clip();
+    ctx.drawImage(avatar, 50, 60, 140, 140);
+    ctx.restore();
+
+    // Username
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 36px Sans';
+    ctx.fillText(user.username, 230, 100);
+
+    // Level
+    ctx.fillStyle = '#60a5fa';
+    ctx.font = '28px Sans';
+    ctx.fillText(`LEVEL ${level}`, 230, 145);
+
+    // XP Text
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '22px Sans';
+    ctx.fillText(`${xp} / ${nextLevelXp} XP`, 230, 180);
+
+    // Progress bar background
+    ctx.fillStyle = '#1e293b';
+    roundRect(ctx, 230, 195, 560, 24, 12, true);
+
+    // Progress
+    const progress = Math.min(xp / nextLevelXp, 1);
+    ctx.fillStyle = '#2563eb';
+    roundRect(ctx, 230, 195, 560 * progress, 24, 12, true);
+
+    return canvas.toBuffer('image/png');
+}
+
+function roundRect(ctx, x, y, width, height, radius, fill) {
+    ctx.beginPath();
+    ctx.moveTo(x + radius, y);
+
+    ctx.lineTo(x + width - radius, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+
+    ctx.lineTo(x + width, y + height - radius);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+
+    ctx.lineTo(x + radius, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+
+    ctx.lineTo(x, y + radius);
+    ctx.quadraticCurveTo(x, y, x + radius, y);
+
+    ctx.closePath();
+
+    if (fill) ctx.fill();
 }
 
 // =====================
@@ -1113,8 +1188,26 @@ client.on('interactionCreate', async i => {
     }
 
     if (i.commandName === 'rank') {
-        const user = getUser(i.user.id);
-        return i.reply(`🎮 XP: ${user.xp} | LEVEL: ${Math.floor(user.xp / 100)}`);
+    const userData = getUser(i.user.id);
+
+    const level = Math.floor(userData.xp / 100);
+    const currentXp = userData.xp % 100;
+    const nextLevelXp = 100;
+
+    const buffer = await createRankCard(
+        i.user,
+        level,
+        currentXp,
+        nextLevelXp
+    );
+
+    const attachment = new AttachmentBuilder(buffer, {
+        name: 'rank.png'
+    });
+
+    return i.reply({
+        files: [attachment]
+    });
     }
 
     if (i.commandName === 'money') {
@@ -1497,8 +1590,25 @@ client.on('messageCreate', async msg => {
         }
 
         if (cmd === 'rank') {
-            return msg.reply(`🎮 XP: ${user.xp} | LEVEL: ${Math.floor(user.xp / 100)}`);
-        }
+         const level = Math.floor(user.xp / 100);
+         const currentXp = user.xp % 100;
+         const nextLevelXp = 100;
+
+         const buffer = await createRankCard(
+            msg.author,
+            level,
+            currentXp,
+            nextLevelXp
+       );
+
+         const attachment = new AttachmentBuilder(buffer, {
+            name: 'rank.png'
+       });
+
+         return msg.reply({
+            files: [attachment]
+       });
+    }
 
         if (cmd === 'money') {
             return msg.reply(`💰 Money: ${user.money}`);
