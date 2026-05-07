@@ -366,14 +366,14 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
    </div>
    
 <div class="card">
-  <h2>📊 Server Statistics</h2>
+  <h2>📊 Ben D Bot Statistics</h2>
 
   <div class="chart">
 
     <div class="barBox">
       <div
         class="bar bar1"
-        style="height:${Math.min(client.guilds.cache.size * 20, 180)}px;">
+        style="height:${Math.min(client.guilds.cache.size * 20,180)}px;">
       </div>
 
       <p>Servers</p>
@@ -383,7 +383,7 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
     <div class="barBox">
       <div
         class="bar bar2"
-        style="height:${Math.min(client.users.cache.size * 10, 180)}px;">
+        style="height:${Math.min((guild?.memberCount || 0) / 2,180)}px;">
       </div>
 
       <p>Members</p>
@@ -393,15 +393,47 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
     <div class="barBox">
       <div
         class="bar bar3"
-        style="height:${Math.min((guild?.memberCount || 0) / 2,180)}px;">
-       </div>
+        style="height:${Math.min(buildCommands().length * 10,180)}px;">
+      </div>
 
-        <p>Commands</p>
-        <small>${buildCommands().length}</small>
-       </div>
+      <p>Commands</p>
+      <small>${buildCommands().length}</small>
+    </div>
 
-     </div>
-   </div>
+    <div class="barBox">
+      <div
+        class="bar"
+        style="
+          height:${Math.min(Math.floor(process.uptime() / 60) * 2,180)}px;
+          background:#ec4899;
+          box-shadow:0 0 20px rgba(236,72,153,.45);
+        ">
+      </div>
+
+      <p>Uptime</p>
+      <small>${Math.floor(process.uptime() / 60)} Min</small>
+    </div>
+
+  </div>
+
+  <hr>
+
+  <div class="grid">
+    <div>
+      <h3>🌐 Global Stats</h3>
+      <p><b>Total Servers:</b> ${client.guilds.cache.size}</p>
+      <p><b>Total Users Cached:</b> ${client.users.cache.size}</p>
+      <p><b>Total Commands:</b> ${buildCommands().length}</p>
+    </div>
+
+    <div>
+      <h3>🏠 Selected Server</h3>
+      <p><b>Name:</b> ${guild ? escapeHtml(guild.name) : 'Unknown'}</p>
+      <p><b>Members:</b> ${guild?.memberCount || 0}</p>
+      <p><b>Server ID:</b> ${guild?.id || 'Unknown'}</p>
+    </div>
+  </div>
+</div>
 
     <div class="card">
       <h2>Settings</h2>
