@@ -386,14 +386,14 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
         style="height:${Math.min(client.users.cache.size * 10, 180)}px;">
       </div>
 
-      <p>Users</p>
-      <small>${client.users.cache.size}</small>
+      <p>Members</p>
+      <small>${guild?.memberCount || 0}</small>
     </div>
 
     <div class="barBox">
       <div
         class="bar bar3"
-        style="height:${Math.min(buildCommands().length * 10, 180)}px;">
+        style="height:${Math.min((guild?.memberCount || 0) / 2,180)}px;">
        </div>
 
         <p>Commands</p>
