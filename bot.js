@@ -3,6 +3,7 @@ const axios = require('axios');
 const fs = require('fs');
 const express = require('express');
 const path = require('path');
+const os = require('os');
 const {
     Client,
     GatewayIntentBits,
@@ -280,6 +281,67 @@ function renderDashboard(guildId, key) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Ben D Bot Dashboard</title>
 <style>
+.statsGrid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+  margin-top:12px;
+}
+
+.statCard{
+  background:#0b1220;
+  border:1px solid #243244;
+  border-radius:14px;
+  padding:14px;
+}
+
+.statTop{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:8px;
+}
+
+.statLabel{
+  color:#cbd5e1;
+  font-weight:700;
+}
+
+.statValue{
+  font-size:1.1rem;
+  font-weight:800;
+}
+
+.miniBarWrap{
+  width:100%;
+  height:10px;
+  background:#1f2937;
+  border-radius:999px;
+  overflow:hidden;
+}
+
+.miniBar{
+  height:100%;
+  width:0%;
+  border-radius:999px;
+  transition:width .6s ease;
+  animation:pulse 1.6s ease-in-out infinite;
+}
+
+.miniBar.blue{background:#3b82f6;}
+.miniBar.green{background:#10b981;}
+.miniBar.purple{background:#8b5cf6;}
+.miniBar.orange{background:#f59e0b;}
+.miniBar.pink{background:#ec4899;}
+
+@keyframes pulse{
+  0%,100%{opacity:.75}
+  50%{opacity:1}
+}
+
+@media(max-width:900px){
+  .statsGrid{grid-template-columns:1fr;}
+}
 body{font-family:Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:0}
 .wrap{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
 h1,h2,h3 {
@@ -368,71 +430,73 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
 <div class="card">
   <h2>📊 Ben D Bot Statistics</h2>
 
-  <div class="chart">
-
-    <div class="barBox">
-      <div
-        class="bar bar1"
-        style="height:${Math.min(client.guilds.cache.size * 20,180)}px;">
+  <div class="statsGrid">
+    <div class="statCard">
+      <div class="statTop">
+        <span class="statLabel">Servers</span>
+        <span class="statValue" id="st-servers">${client.guilds.cache.size}</span>
       </div>
-
-      <p>Servers</p>
-      <small>${client.guilds.cache.size}</small>
+      <div class="miniBarWrap"><div class="miniBar blue" id="bar-servers"></div></div>
     </div>
 
-    <div class="barBox">
-      <div
-        class="bar bar2"
-        style="height:${Math.min((guild?.memberCount || 0) / 2,180)}px;">
+    <div class="statCard">
+      <div class="statTop">
+        <span class="statLabel">Members</span>
+        <span class="statValue" id="st-members">${guild?.memberCount || 0}</span>
       </div>
-
-      <p>Members</p>
-      <small>${guild?.memberCount || 0}</small>
+      <div class="miniBarWrap"><div class="miniBar green" id="bar-members"></div></div>
     </div>
 
-    <div class="barBox">
-      <div
-        class="bar bar3"
-        style="height:${Math.min(buildCommands().length * 10,180)}px;">
+    <div class="statCard">
+      <div class="statTop">
+        <span class="statLabel">Commands</span>
+        <span class="statValue" id="st-commands">${buildCommands().length}</span>
       </div>
-
-      <p>Commands</p>
-      <small>${buildCommands().length}</small>
+      <div class="miniBarWrap"><div class="miniBar purple" id="bar-commands"></div></div>
     </div>
 
-    <div class="barBox">
-      <div
-        class="bar"
-        style="
-          height:${Math.min(Math.floor(process.uptime() / 60) * 2,180)}px;
-          background:#ec4899;
-          box-shadow:0 0 20px rgba(236,72,153,.45);
-        ">
+    <div class="statCard">
+      <div class="statTop">
+        <span class="statLabel">Uptime</span>
+        <span class="statValue" id="st-uptime">${Math.floor(process.uptime() / 60)} min</span>
       </div>
-
-      <p>Uptime</p>
-      <small>${Math.floor(process.uptime() / 60)} Min</small>
+      <div class="miniBarWrap"><div class="miniBar orange" id="bar-uptime"></div></div>
     </div>
 
+    <div class="statCard">
+      <div class="statTop">
+        <span class="statLabel">RAM Usage</span>
+        <span class="statValue" id="st-ram">-</span>
+      </div>
+      <div class="miniBarWrap"><div class="miniBar pink" id="bar-ram"></div></div>
+    </div>
+
+    <div class="statCard">
+      <div class="statTop">
+        <span class="statLabel">CPU Usage</span>
+        <span class="statValue" id="st-cpu">-</span>
+      </div>
+      <div class="miniBarWrap"><div class="miniBar blue" id="bar-cpu"></div></div>
+    </div>
+
+    <div class="statCard">
+      <div class="statTop">
+        <span class="statLabel">Ping</span>
+        <span class="statValue" id="st-ping">${client.ws.ping} ms</span>
+      </div>
+      <div class="miniBarWrap"><div class="miniBar green" id="bar-ping"></div></div>
+    </div>
+
+    <div class="statCard">
+      <div class="statTop">
+        <span class="statLabel">DB Size</span>
+        <span class="statValue" id="st-db">-</span>
+      </div>
+      <div class="miniBarWrap"><div class="miniBar purple" id="bar-db"></div></div>
+    </div>
   </div>
 
   <hr>
-
-  <div class="grid">
-    <div>
-      <h3>🌐 Global Stats</h3>
-      <p><b>Total Servers:</b> ${client.guilds.cache.size}</p>
-      <p><b>Total Users Cached:</b> ${client.users.cache.size}</p>
-      <p><b>Total Commands:</b> ${buildCommands().length}</p>
-    </div>
-
-    <div>
-      <h3>🏠 Selected Server</h3>
-      <p><b>Name:</b> ${guild ? escapeHtml(guild.name) : 'Unknown'}</p>
-      <p><b>Members:</b> ${guild?.memberCount || 0}</p>
-      <p><b>Server ID:</b> ${guild?.id || 'Unknown'}</p>
-    </div>
-  </div>
 </div>
 
     <div class="card">
@@ -554,11 +618,91 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
     </div>
   </div>
 </div>
+<script>
+async function updateStats() {
+  try {
+    const res = await fetch('/api/stats?guild=${encodeURIComponent(guildId)}');
+    const data = await res.json();
+
+    const memMB = (data.memory.heapUsed / 1024 / 1024).toFixed(1);
+    const memTotalMB = (data.memory.heapTotal / 1024 / 1024).toFixed(1);
+    const dbKB = (data.dbSize / 1024).toFixed(1);
+
+    document.getElementById('st-servers').textContent = data.servers;
+    document.getElementById('st-members').textContent = data.members;
+    document.getElementById('st-commands').textContent = data.commands;
+    document.getElementById('st-uptime').textContent = Math.floor(data.uptimeSec / 60) + ' min';
+    document.getElementById('st-ram').textContent = memMB + ' MB / ' + memTotalMB + ' MB';
+    document.getElementById('st-cpu').textContent = data.cpuPercent + '%';
+    document.getElementById('st-ping').textContent = data.ping + ' ms';
+    document.getElementById('st-db').textContent = dbKB + ' KB';
+
+    document.getElementById('bar-servers').style.width = Math.min(data.servers * 10, 100) + '%';
+    document.getElementById('bar-members').style.width = Math.min(data.members / 2, 100) + '%';
+    document.getElementById('bar-commands').style.width = Math.min(data.commands * 8, 100) + '%';
+    document.getElementById('bar-uptime').style.width = Math.min((data.uptimeSec / 60) * 2, 100) + '%';
+    document.getElementById('bar-ram').style.width = Math.min((data.memory.heapUsed / data.memory.heapTotal) * 100, 100) + '%';
+    document.getElementById('bar-cpu').style.width = Math.min(data.cpuPercent, 100) + '%';
+    document.getElementById('bar-ping').style.width = Math.min(data.ping, 100) + '%';
+    document.getElementById('bar-db').style.width = Math.min(data.dbSize / 2000, 100) + '%';
+  } catch (e) {}
+}
+
+updateStats();
+setInterval(updateStats, 5000);
+</script>
 </body>
 </html>`;
 }
 
 app.get('/health', (_req, res) => res.send('ok'));
+
+app.get('/api/stats', (req, res) => {
+    const guildId = req.query.guild || client.guilds.cache.first()?.id;
+    const guild = guildId ? client.guilds.cache.get(guildId) : null;
+
+    const mem = process.memoryUsage();
+    const dbSize = fs.existsSync(DB_FILE) ? fs.statSync(DB_FILE).size : 0;
+
+    const nowCpu = process.cpuUsage();
+    const nowTime = process.hrtime.bigint();
+
+    if (!global.__cpuState) {
+        global.__cpuState = {
+            cpu: nowCpu,
+            time: nowTime
+        };
+    }
+
+    const elapsedMicros = Number(nowTime - global.__cpuState.time) / 1000;
+    const cpuMicros =
+        (nowCpu.user - global.__cpuState.cpu.user) +
+        (nowCpu.system - global.__cpuState.cpu.system);
+
+    const cpuPercent = elapsedMicros > 0
+        ? Math.max(0, Math.min(100, (cpuMicros / elapsedMicros) * 100))
+        : 0;
+
+    global.__cpuState.cpu = nowCpu;
+    global.__cpuState.time = nowTime;
+
+    res.json({
+        botTag: client.user?.tag || 'Unknown',
+        online: !!client.user,
+        ping: client.ws.ping,
+        servers: client.guilds.cache.size,
+        members: guild?.memberCount || 0,
+        commands: buildCommands().length,
+        uptimeSec: Math.floor(process.uptime()),
+        memory: {
+            rss: mem.rss,
+            heapUsed: mem.heapUsed,
+            heapTotal: mem.heapTotal
+        },
+        cpuPercent: Number(cpuPercent.toFixed(1)),
+        dbSize
+    });
+});
 
 app.get('/', (req, res) => {
     if (!DASHBOARD_KEY) {
