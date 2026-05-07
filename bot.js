@@ -518,7 +518,7 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
       <p><b>Welcome:</b> ${escapeHtml(g.welcomeChannel || '-')}</p>
       <p><b>Automod:</b> ${g.automod.enabled ? 'ON' : 'OFF'}</p>
       <p><b>Raid:</b> ${g.raid.enabled ? 'ON' : 'OFF'}</p>
-      <p><small>Bot dashboard simple. Ubah config lalu save.</small></p>
+      <p><small>Ben D Bot dashboard. Ubah config lalu save.</small></p>
     </div>
   </div>
 </div>
