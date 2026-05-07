@@ -306,6 +306,43 @@ small{color:#94a3b8}
 .badge{display:inline-block;padding:4px 10px;border-radius:999px;background:#1f2937;margin-right:6px}
 a{color:#93c5fd;text-decoration:none}
 hr{border:none;border-top:1px solid #243244;margin:18px 0}
+.chart{
+  display:flex;
+  align-items:flex-end;
+  gap:20px;
+  height:240px;
+  padding:20px 10px;
+}
+
+.barBox{
+  flex:1;
+  text-align:center;
+}
+
+.bar{
+  width:100%;
+  border-radius:14px 14px 0 0;
+  transition:.35s;
+}
+
+.bar:hover{
+  filter:brightness(1.2);
+}
+
+.bar1{
+  background:#3b82f6;
+  box-shadow:0 0 20px rgba(59,130,246,.45);
+}
+
+.bar2{
+  background:#10b981;
+  box-shadow:0 0 20px rgba(16,185,129,.45);
+}
+
+.bar3{
+  background:#f59e0b;
+  box-shadow:0 0 20px rgba(245,158,11,.45);
+}
 @media(max-width:900px){.wrap{grid-template-columns:1fr}.sidebar{border-right:none;border-bottom:1px solid #1f2937}}
 </style>
 </head>
@@ -328,35 +365,43 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
      <p><b>Servers:</b> ${client.guilds.cache.size}</p>
    </div>
    
-   <div class="card">
+<div class="card">
   <h2>📊 Server Statistics</h2>
 
-  <div class="chart-wrap">
-    <div class="bar">
-      <span>Servers</span>
-      <div class="bar-bg">
-        <div class="bar-fill" style="width:${Math.min(client.guilds.cache.size * 10, 100)}%"></div>
+  <div class="chart">
+
+    <div class="barBox">
+      <div
+        class="bar bar1"
+        style="height:${Math.min(client.guilds.cache.size * 20, 180)}px;">
       </div>
+
+      <p>Servers</p>
       <small>${client.guilds.cache.size}</small>
     </div>
 
-    <div class="bar">
-      <span>Users</span>
-      <div class="bar-bg">
-        <div class="bar-fill green" style="width:${Math.min(client.users.cache.size / 10, 100)}%"></div>
+    <div class="barBox">
+      <div
+        class="bar bar2"
+        style="height:${Math.min(client.users.cache.size * 10, 180)}px;">
       </div>
+
+      <p>Users</p>
       <small>${client.users.cache.size}</small>
     </div>
 
-    <div class="bar">
-      <span>Commands</span>
-      <div class="bar-bg">
-               <div class="bar-fill purple" style="width:${Math.min(buildCommands().length * 5, 100)}%"></div>
-            </div>
-            <small>${buildCommands().length}</small>
-         </div>
-      </div>
-    </div>
+    <div class="barBox">
+      <div
+        class="bar bar3"
+        style="height:${Math.min(buildCommands().length * 10, 180)}px;">
+       </div>
+
+        <p>Commands</p>
+        <small>${buildCommands().length}</small>
+       </div>
+
+     </div>
+   </div>
 
     <div class="card">
       <h2>Settings</h2>
