@@ -278,7 +278,7 @@ function renderDashboard(guildId, key) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Ben Bot Dashboard</title>
+<title>Ben D Bot Dashboard</title>
 <style>
 body{font-family:Arial,sans-serif;background:#0f172a;color:#e2e8f0;margin:0}
 .wrap{display:grid;grid-template-columns:280px 1fr;min-height:100vh}
@@ -327,6 +327,36 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
      <p><b>Bot:</b> ${client.user?.tag || 'Unknown'}</p>
      <p><b>Servers:</b> ${client.guilds.cache.size}</p>
    </div>
+   
+   <div class="card">
+  <h2>📊 Server Statistics</h2>
+
+  <div class="chart-wrap">
+    <div class="bar">
+      <span>Servers</span>
+      <div class="bar-bg">
+        <div class="bar-fill" style="width:${Math.min(client.guilds.cache.size * 10, 100)}%"></div>
+      </div>
+      <small>${client.guilds.cache.size}</small>
+    </div>
+
+    <div class="bar">
+      <span>Users</span>
+      <div class="bar-bg">
+        <div class="bar-fill green" style="width:${Math.min(client.users.cache.size / 10, 100)}%"></div>
+      </div>
+      <small>${client.users.cache.size}</small>
+    </div>
+
+    <div class="bar">
+      <span>Commands</span>
+      <div class="bar-bg">
+               <div class="bar-fill purple" style="width:${Math.min(buildCommands().length * 5, 100)}%"></div>
+            </div>
+            <small>${buildCommands().length}</small>
+         </div>
+      </div>
+    </div>
 
     <div class="card">
       <h2>Settings</h2>
