@@ -501,11 +501,8 @@ hr{border:none;border-top:1px solid #243244;margin:18px 0}
      <p><b>Bot:</b> ${client.user?.tag || 'Unknown'}</p>
      <p><b>Servers:</b> ${client.guilds.cache.size}</p>
    </div>
-<<<<<<< HEAD
-   
-=======
 
->>>>>>> 3405a33 (Add rank card system)
+
 <div class="card">
   <h2>📊 Ben D Bot Statistics</h2>
 
@@ -1598,7 +1595,6 @@ client.on('messageCreate', async msg => {
          const currentXp = user.xp % 100;
          const nextLevelXp = 100;
 
-<<<<<<< HEAD
          const buffer = await createRankCard(
             msg.author,
             level,
@@ -1614,7 +1610,6 @@ client.on('messageCreate', async msg => {
             files: [attachment]
        });
     }
-=======
         const buffer = await createRankCard(
            msg.author,
            level,
@@ -1630,7 +1625,6 @@ client.on('messageCreate', async msg => {
             files: [attachment]
         });
        }
->>>>>>> 3405a33 (Add rank card system)
 
         if (cmd === 'money') {
             return msg.reply(`💰 Money: ${user.money}`);
