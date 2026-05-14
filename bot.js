@@ -5,6 +5,9 @@ const express = require('express');
 const path = require('path');
 const os = require('os');
 const Canvas = require('canvas');
+Canvas.registerFont('./fonts/Poppins-Regular.ttf', {
+    family: 'Poppins'
+});
 const { AttachmentBuilder } = require('discord.js');
 const {
     Client,
@@ -253,7 +256,7 @@ async function createRankCard(user, level, xp, nextLevelXp) {
 
     // Username
     ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 36px Sans';
+    ctx.font = '28px "Poppins"';
     ctx.fillText(user.username, 230, 100);
 
     // Level
