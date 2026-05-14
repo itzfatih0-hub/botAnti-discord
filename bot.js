@@ -1624,7 +1624,6 @@ client.on('messageCreate', async msg => {
         return msg.reply({
             files: [attachment]
         });
-       }
 
         if (cmd === 'money') {
             return msg.reply(`💰 Money: ${user.money}`);
