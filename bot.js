@@ -1023,10 +1023,11 @@ function buildCommands() {
                 opt.setName('lock')
                     .setDescription('Durasi lock dalam detik')
                     .setRequired(false)
-            )
+            ),
+
          new SlashCommandBuilder()
-           .setName('leaderboard')
-           .setDescription('Top XP leaderboard'),
+            .setName('leaderboard')
+            .setDescription('Top XP leaderboard'),
       )
     ];
 }
