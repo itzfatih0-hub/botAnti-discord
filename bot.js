@@ -1028,7 +1028,6 @@ function buildCommands() {
          new SlashCommandBuilder()
             .setName('leaderboard')
             .setDescription('Top XP leaderboard'),
-      )
     ];
 }
 
@@ -1582,6 +1581,7 @@ client.on('messageCreate', async msg => {
                     `${prefix}money`,
                     `${prefix}daily`,
                     `${prefix}remind <detik> <pesan>`,
+                    `${prefix}leaderboard`,
                     ``,
                     `**Moderation**`,
                     `${prefix}warn @user`,
@@ -1609,6 +1609,32 @@ client.on('messageCreate', async msg => {
             const reply = await chatAIReal(msg.author.id, text, g.personality);
             return msg.reply(reply);
         }
+
+        if (cmd === 'leaderboard') {
+
+          const users = Object.entries(db.users || {})
+          .sort((a, b) => (b[1].xp || 0) - (a[1].xp || 0))
+          .slice(0, 10);
+
+          let text = '🏆 **TOP XP LEADERBOARD** 🏆\n\n';
+
+         for (let index = 0; index < users.length; index++) {
+
+        const [id, data] = users[index];
+
+        let memberName = `Unknown User`;
+
+        try {
+            const member = await i.guild.members.fetch(id);
+            memberName = member.user.tag;
+        } catch {}
+
+        text += `#${index + 1} • ${memberName}\n`;
+        text += `XP: ${data.xp || 0}\n\n`;
+    }
+
+    return i.reply(text);
+}
 
         if (cmd === 'personal') {
             if (!msg.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
