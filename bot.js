@@ -1024,6 +1024,10 @@ function buildCommands() {
                     .setDescription('Durasi lock dalam detik')
                     .setRequired(false)
             )
+         new SlashCommandBuilder()
+           .setName('leaderboard')
+           .setDescription('Top XP leaderboard'),
+      )
     ];
 }
 
@@ -1166,6 +1170,7 @@ client.on('interactionCreate', async i => {
                 '/money',
                 '/daily',
                 '/remind',
+                '/leaderboard',
                 '',
                 '**Moderation**',
                 '/warn',
@@ -1218,6 +1223,32 @@ client.on('interactionCreate', async i => {
         const user = getUser(i.user.id);
         return i.reply(`💰 Money: ${user.money}`);
     }
+
+    if (i.commandName === 'leaderboard') {
+
+    const users = Object.entries(db.users || {})
+        .sort((a, b) => (b[1].xp || 0) - (a[1].xp || 0))
+        .slice(0, 10);
+
+    let text = '🏆 **TOP XP LEADERBOARD** 🏆\n\n';
+
+    for (let index = 0; index < users.length; index++) {
+
+        const [id, data] = users[index];
+
+        let memberName = `Unknown User`;
+
+        try {
+            const member = await i.guild.members.fetch(id);
+            memberName = member.user.tag;
+        } catch {}
+
+        text += `#${index + 1} • ${memberName}\n`;
+        text += `XP: ${data.xp || 0}\n\n`;
+    }
+
+    return i.reply(text);
+}
 
     if (i.commandName === 'daily') {
         const user = getUser(i.user.id);
