@@ -3,6 +3,27 @@ const axios = require('axios');
 const fs = require('fs');
 const express = require('express');
 const path = require('path');
+const SHOP_ITEMS = {
+    laptop: {
+        name: '💻 Laptop',
+        price: 500
+    },
+
+    crown: {
+        name: '👑 Crown',
+        price: 1000
+    },
+
+    vip: {
+        name: '💎 VIP Badge',
+        price: 2500
+    },
+
+    potion: {
+        name: '🧪 XP Potion',
+        price: 300
+    }
+};
 const os = require('os');
 const Canvas = require('canvas');
 Canvas.registerFont('./fonts/Poppins-Regular.ttf', {
@@ -74,6 +95,7 @@ function getUser(id) {
     db.users[id].memory ??= [];
     db.users[id].spam ??= 0;
     db.users[id].warns ??= 0;
+    db.users[id].inventory ??= [];
     return db.users[id];
 }
 
@@ -1028,6 +1050,10 @@ function buildCommands() {
          new SlashCommandBuilder()
             .setName('leaderboard')
             .setDescription('Top XP leaderboard'),
+
+         new SlashCommandBuilder()
+            .setName('gamble')
+            .setDescription('Lets go Gambling!'),
     ];
 }
 
@@ -1171,6 +1197,7 @@ client.on('interactionCreate', async i => {
                 '/daily',
                 '/remind',
                 '/leaderboard',
+                '/gamble',
                 '',
                 '**Moderation**',
                 '/warn',
@@ -1218,6 +1245,33 @@ client.on('interactionCreate', async i => {
         files: [attachment]
     });
     }
+
+    if (i.commandName === 'gamble') {
+
+    const amount = parseInt(args[0]);
+
+    if (!amount || amount <= 0) {
+        return msg.reply(`contoh: ${prefix}gamble 100`);
+    }
+
+    if (user.money < amount) {
+        return msg.reply('💀 uang lu kurang');
+    }
+
+    const win = Math.random() < 0.5;
+
+    if (win) {
+        user.money += amount;
+        saveDB();
+
+        return msg.reply(`🎉 LU MENANG +${amount} coin`);
+    } else {
+        user.money -= amount;
+        saveDB();
+
+        return msg.reply(`💀 kalah -${amount} coin`);
+    }
+}
 
     if (i.commandName === 'money') {
         const user = getUser(i.user.id);
@@ -1582,6 +1636,7 @@ client.on('messageCreate', async msg => {
                     `${prefix}daily`,
                     `${prefix}remind <detik> <pesan>`,
                     `${prefix}leaderboard`,
+                    `${prefix}gamble`,
                     ``,
                     `**Moderation**`,
                     `${prefix}warn @user`,
@@ -1685,6 +1740,33 @@ client.on('messageCreate', async msg => {
         return msg.reply({
             files: [attachment]
         });
+
+        if (cmd === 'gamble') {
+
+    const amount = parseInt(args[0]);
+
+    if (!amount || amount <= 0) {
+        return msg.reply(`contoh: ${prefix}gamble 100`);
+    }
+
+    if (user.money < amount) {
+        return msg.reply('💀 uang lu kurang');
+    }
+
+    const win = Math.random() < 0.5;
+
+    if (win) {
+        user.money += amount;
+        saveDB();
+
+        return msg.reply(`🎉 LU MENANG +${amount} coin`);
+    } else {
+        user.money -= amount;
+        saveDB();
+
+        return msg.reply(`💀 kalah -${amount} coin`);
+    }
+}
 
         if (cmd === 'money') {
             return msg.reply(`💰 Money: ${user.money}`);
