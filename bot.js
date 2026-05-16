@@ -1064,9 +1064,15 @@ function buildCommands() {
                 .setRequired(true)
     ),
 
-         new SlashCommandBuilder()
-            .setName('afk')
-            .setDescription('Afk'),
+        new SlashCommandBuilder()
+         .setName('afk')
+         .setDescription('Afk')
+         .addStringOption(option =>
+                 option
+                  .setName('reason')
+                  .setDescription('Alasan AFK')
+                  .setRequired(false)
+    ),
     ];
 }
 
