@@ -1055,8 +1055,14 @@ function buildCommands() {
             .setDescription('Top XP leaderboard'),
 
          new SlashCommandBuilder()
-            .setName('gamble')
-            .setDescription('Lets go Gambling!'),
+           .setName('gamble')
+           .setDescription('Lets go Gambling!')
+           .addIntegerOption(option =>
+              option
+                .setName('amount')
+                .setDescription('Jumlah uang yang mau digamble')
+                .setRequired(true)
+    ),
 
          new SlashCommandBuilder()
             .setName('afk')
