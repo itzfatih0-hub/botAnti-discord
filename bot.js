@@ -88,7 +88,8 @@ function getUser(id) {
             memory: [],
             recentMessages: [],
             spam: 0,
-            warns: 0
+            warns: 0,
+            inventory: []
         };
     }
     db.users[id].recentMessages ??= [];
