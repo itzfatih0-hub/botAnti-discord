@@ -89,7 +89,8 @@ function getUser(id) {
             recentMessages: [],
             spam: 0,
             warns: 0,
-            inventory: []
+            inventory: [],
+            afk: null
         };
     }
     db.users[id].recentMessages ??= [];
@@ -97,6 +98,7 @@ function getUser(id) {
     db.users[id].spam ??= 0;
     db.users[id].warns ??= 0;
     db.users[id].inventory ??= [];
+    db.users[id].afk ??= null;
     return db.users[id];
 }
 
@@ -1055,6 +1057,10 @@ function buildCommands() {
          new SlashCommandBuilder()
             .setName('gamble')
             .setDescription('Lets go Gambling!'),
+
+         new SlashCommandBuilder()
+            .setName('afk')
+            .setDescription('Afk'),
     ];
 }
 
@@ -1199,6 +1205,7 @@ client.on('interactionCreate', async i => {
                 '/remind',
                 '/leaderboard',
                 '/gamble',
+                '/afk',
                 '',
                 '**Moderation**',
                 '/warn',
@@ -1528,6 +1535,34 @@ client.on('messageCreate', async msg => {
         const user = getUser(msg.author.id);
         const content = msg.content.trim();
 
+        // AFK
+        if (user.afk) {
+
+        user.afk = null;
+        saveDB();
+
+           msg.reply('👋 Welcome back, AFK dihapus.');
+        }
+
+        // MENTION AFK
+        for (const member of msg.mentions.users.values()) {
+
+    const data = getUser(member.id);
+
+    if (data.afk) {
+
+        const mins = Math.floor(
+            (Date.now() - data.afk.since) / 60000
+        );
+
+        msg.reply(
+            `💤 ${member.username} sedang AFK\n` +
+            `📝 ${data.afk.reason}\n` +
+            `⏰ ${mins} menit lalu`
+        );
+    }
+}
+
         // DM AI
         if (!msg.guild) {
         const reply = await chatAIReal(msg.author.id, content, 'chill');
@@ -1638,6 +1673,7 @@ client.on('messageCreate', async msg => {
                     `${prefix}remind <detik> <pesan>`,
                     `${prefix}leaderboard`,
                     `${prefix}gamble`,
+                    `${prefix}afk`,
                     ``,
                     `**Moderation**`,
                     `${prefix}warn @user`,
@@ -1705,6 +1741,20 @@ client.on('messageCreate', async msg => {
             g.personality = style;
             saveDB();
             return msg.reply(`🤖 Personality jadi **${style}**`);
+        }
+
+        if (cmd === 'afk') {
+
+        const reason = args.join(' ') || 'AFK';
+
+             user.afk = {
+             reason,
+             since: Date.now()
+          };
+
+            saveDB();
+
+            return msg.reply(`💤 AFK di-set: ${reason}`);
         }
 
         if (cmd === 'rank') {
