@@ -1060,7 +1060,7 @@ function buildCommands() {
            .addIntegerOption(option =>
               option
                 .setName('amount')
-                .setDescription('Jumlah uang yang mau digamble')
+                .setDescription('How much money for gambling')
                 .setRequired(true)
     ),
 
@@ -1070,7 +1070,7 @@ function buildCommands() {
          .addStringOption(option =>
                  option
                   .setName('reason')
-                  .setDescription('Alasan AFK')
+                  .setDescription('Reason AFK')
                   .setRequired(false)
     ),
     ];
@@ -1564,7 +1564,7 @@ client.on('messageCreate', async msg => {
         user.afk = null;
         saveDB();
 
-           msg.reply('👋 Welcome back, AFK dihapus.');
+           msg.reply('👋 Welcome back, AFK Removed!');
         }
 
         // MENTION AFK
