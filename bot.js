@@ -1279,6 +1279,24 @@ client.on('interactionCreate', async i => {
 
         return msg.reply(`💀 kalah -${amount} coin`);
     }
+
+    if (i.commandName === 'afk') {
+
+    const user = getUser(i.user.id);
+
+    const reason =
+        i.options.getString('reason') || 'AFK';
+
+    user.afk = {
+        reason,
+        since: Date.now()
+    };
+
+    saveDB();
+
+    return i.reply(
+        `💤 AFK di-set: ${reason}`
+    );
 }
 
     if (i.commandName === 'money') {
