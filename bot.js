@@ -1254,16 +1254,16 @@ client.on('interactionCreate', async i => {
     });
     }
 
-    if (i.commandName === 'gamble') {
-
-    const amount = parseInt(args[0]);
+if (i.commandName === 'gamble') {
+    const user = getUser(i.user.id);
+    const amount = i.options.getInteger('amount');
 
     if (!amount || amount <= 0) {
-        return msg.reply(`contoh: ${prefix}gamble 100`);
+        return i.reply({ content: 'contoh: /gamble amount:100', ephemeral: true });
     }
 
     if (user.money < amount) {
-        return msg.reply('💀 uang lu kurang');
+        return i.reply({ content: '💀 uang lu kurang', ephemeral: true });
     }
 
     const win = Math.random() < 0.5;
@@ -1271,21 +1271,17 @@ client.on('interactionCreate', async i => {
     if (win) {
         user.money += amount;
         saveDB();
-
-        return msg.reply(`🎉 LU MENANG +${amount} coin`);
+        return i.reply(`🎉 LU MENANG +${amount} coin`);
     } else {
         user.money -= amount;
         saveDB();
-
-        return msg.reply(`💀 kalah -${amount} coin`);
+        return i.reply(`💀 kalah -${amount} coin`);
     }
+}
 
-    if (i.commandName === 'afk') {
-
+if (i.commandName === 'afk') {
     const user = getUser(i.user.id);
-
-    const reason =
-        i.options.getString('reason') || 'AFK';
+    const reason = i.options.getString('reason') || 'AFK';
 
     user.afk = {
         reason,
@@ -1293,10 +1289,7 @@ client.on('interactionCreate', async i => {
     };
 
     saveDB();
-
-    return i.reply(
-        `💤 AFK di-set: ${reason}`
-    );
+    return i.reply(`💤 AFK di-set: ${reason}`);
 }
 
     if (i.commandName === 'money') {
