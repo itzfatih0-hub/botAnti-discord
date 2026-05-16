@@ -1541,7 +1541,7 @@ client.on('interactionCreate', async i => {
             `Lock: ${g.raid.lockMs / 1000} detik`
         );
     }
-};
+});
 
 // =====================
 // MESSAGE HANDLER
