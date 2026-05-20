@@ -1261,13 +1261,13 @@ client.on('interactionCreate', async i => {
     }
 
      if (i.commandName === 'ai') {
-        try {
-          await i.deferReply();
+    try {
+        await i.deferReply();
 
-           const reply = await chatAIReal(
-               i.user.id,
-               i.options.getString('text'),
-               g.personality
+        const reply = await chatAIReal(
+            i.user.id,
+            i.options.getString('text'),
+            g.personality
         );
 
         if (i.deferred || i.replied) {
