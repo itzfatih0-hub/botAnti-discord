@@ -187,45 +187,43 @@ function escapeHtml(str = '') {
 async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
 
-    let systemPrompt =
-        "Lu adalah AI Discord bernama Ben Bot. Jawab pakai Bahasa Indonesia santai.";
-
-    if (persona === 'formal')
-        systemPrompt = "Jawab formal dan profesional dalam Bahasa Indonesia.";
-
-    if (persona === 'funny')
-        systemPrompt = "Jawab lucu, santai, kadang sedikit ngeselin.";
-
-    if (persona === 'friendly')
-        systemPrompt = "Jawab ramah dan santai.";
+    let systemPrompt = "Kamu adalah AI Discord yang santai, pintar, dan membantu. Jawab pakai Bahasa Indonesia";
+    if (persona === 'formal') systemPrompt = "Kamu AI formal dan profesional. Jawab pakai Bahasa Indonesia";
+    if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas. Jawab pakai Bahasa Indonesia";
+    if (persona === 'friendly') systemPrompt = "Kamu AI ramah dan santai. Jawab pakai Bahasa Indonesia";
 
     user.memory.push({
         role: "user",
         content: text
     });
 
-    if (user.memory.length > 12)
+    if (user.memory.length > 12) {
         user.memory.shift();
+    }
 
     try {
 
-        const completion = await groq.chat.completions.create({
-            model: "llama3-8b-8192",
+        const res = await axios.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+                model: "llama3-8b-8192",
+                messages: [
+                    {
+                        role: "system",
+                        content: systemPrompt
+                    },
+                    ...user.memory
+                ]
+            },
+            {
+                headers: {
+                    "Authorization": `Bearer ${process.env.GROQ_API_KEY}`,
+                    "Content-Type": "application/json"
+                }
+            }
+        );
 
-            messages: [
-                {
-                    role: "system",
-                    content: systemPrompt
-                },
-                ...user.memory
-            ],
-
-            temperature: 0.8,
-            max_tokens: 300
-        });
-
-        const reply =
-            completion.choices[0].message.content;
+        const reply = res.data.choices[0].message.content;
 
         user.memory.push({
             role: "assistant",
@@ -237,9 +235,8 @@ async function chatAIReal(userId, text, persona = 'chill') {
         return reply;
 
     } catch (err) {
-        console.log(err);
-
-        return "❌ AI error";
+        console.log(err.response?.data || err.message);
+        return "AI error 😭";
     }
 }
 
@@ -1084,23 +1081,21 @@ function buildCommands() {
             .setDescription('Top XP leaderboard'),
 
          new SlashCommandBuilder()
-           .setName('gamble')
-           .setDescription('Lets go Gambling!')
-           .addIntegerOption(option =>
-              option
-                .setName('amount')
-                .setDescription('How much money for gambling')
-                .setRequired(true)
+          .setName('gamble')
+          .setDescription('Lets go Gambling!')
+          .addIntegerOption(o =>
+              o.setName('amount')
+               .setDescription('Jumlah uang')
+               .setRequired(true)
     ),
 
         new SlashCommandBuilder()
          .setName('afk')
          .setDescription('Afk')
-         .addStringOption(option =>
-                 option
-                  .setName('reason')
-                  .setDescription('Reason AFK')
-                  .setRequired(false)
+         .addStringOption(o =>
+             o.setName('reason')
+               .setDescription('Reason afk')
+               .setRequired(false)
     ),
     ];
 }
@@ -1296,15 +1291,23 @@ client.on('interactionCreate', async i => {
     }
 
 if (i.commandName === 'gamble') {
-    const user = getUser(i.user.id);
+
     const amount = i.options.getInteger('amount');
 
-    if (!amount || amount <= 0) {
-        return i.reply({ content: 'contoh: /gamble amount:100', ephemeral: true });
+    const user = getUser(i.user.id);
+
+    if (amount <= 0) {
+        return i.reply({
+            content: '❌ amount tidak valid',
+            ephemeral: true
+        });
     }
 
     if (user.money < amount) {
-        return i.reply({ content: '💀 uang lu kurang', ephemeral: true });
+        return i.reply({
+            content: '❌ uang kamu kurang',
+            ephemeral: true
+        });
     }
 
     const win = Math.random() < 0.5;
@@ -1312,11 +1315,13 @@ if (i.commandName === 'gamble') {
     if (win) {
         user.money += amount;
         saveDB();
-        return i.reply(`🎉 LU MENANG +${amount} coin`);
+
+        return i.reply(`🎰 MENANG +${amount} coin`);
     } else {
         user.money -= amount;
         saveDB();
-        return i.reply(`💀 kalah -${amount} coin`);
+
+        return i.reply(`💀 KALAH -${amount} coin`);
     }
 }
 
