@@ -1260,12 +1260,35 @@ client.on('interactionCreate', async i => {
         );
     }
 
-    if (i.commandName === 'ai') {
-        const user = getUser(i.user.id);
-        await i.deferReply();
-        const reply = await chatAIReal(i.user.id, i.options.getString('text'), g.personality);
-        return i.editReply(reply);
+     if (i.commandName === 'ai') {
+        try {
+          await i.deferReply();
+
+           const reply = await chatAIReal(
+               i.user.id,
+               i.options.getString('text'),
+               g.personality
+        );
+
+        if (i.deferred || i.replied) {
+            return await i.editReply(reply);
+        }
+
+    } catch (err) {
+        console.log('AI Slash Error:', err);
+
+        if (!i.replied && !i.deferred) {
+            return i.reply({
+                content: '❌ AI error',
+                ephemeral: true
+            }).catch(() => {});
+        }
+
+        if (i.deferred) {
+            return i.editReply('❌ AI error').catch(() => {});
+        }
     }
+}
 
     if (i.commandName === 'rank') {
     const userData = getUser(i.user.id);
@@ -1752,11 +1775,31 @@ client.on('messageCreate', async msg => {
         }
 
         if (cmd === 'ai') {
-            const text = args.join(' ');
-            if (!text) return msg.reply('Tulis sesuatu dulu.');
-            await msg.channel.sendTyping();
-            const reply = await chatAIReal(msg.author.id, text, g.personality);
-            return msg.reply(reply);
+    try {
+        await i.deferReply();
+
+        const reply = await chatAIReal(
+            i.user.id,
+            i.options.getString('text'),
+            g.personality
+        );
+
+        if (i.deferred || i.replied) {
+            return await i.editReply(reply);
+        }
+
+    } catch (err) {
+        console.log('AI Slash Error:', err);
+
+        if (!i.replied && !i.deferred) {
+            return i.reply({
+                content: '❌ AI error',
+                ephemeral: true
+            }).catch(() => {});
+        }
+
+        if (i.deferred) {
+            return i.editReply('❌ AI error').catch(() => {});
         }
 
         if (cmd === 'leaderboard') {
@@ -2087,6 +2130,16 @@ client.on('messageCreate', async msg => {
     } catch (err) {
         console.log('ERR:', err);
     }
+});
+
+client.on('error', console.error);
+
+process.on('unhandledRejection', err => {
+    console.log('Unhandled Rejection:', err);
+});
+
+process.on('uncaughtException', err => {
+    console.log('Uncaught Exception:', err);
 });
 
 client.login(process.env.TOKEN);
