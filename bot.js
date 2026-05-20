@@ -2,6 +2,7 @@ require('dotenv').config();
 const axios = require('axios');
 const fs = require('fs');
 const express = require('express');
+const OpenAI = require('openai');
 const path = require('path');
 const SHOP_ITEMS = {
     laptop: {
@@ -179,38 +180,67 @@ function escapeHtml(str = '') {
         .replace(/'/g, '&#39;');
 }
 
+const groq = new OpenAI({
+    apiKey: process.env.GROQ_API_KEY,
+    baseURL: "https://api.groq.com/openai/v1"
+});
+
 async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
 
-    let systemPrompt = "Kamu adalah AI Discord yang santai, pintar, dan membantu.";
-    if (persona === 'formal') systemPrompt = "Kamu AI formal dan profesional.";
-    if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas.";
-    if (persona === 'friendly') systemPrompt = "Kamu AI ramah dan santai.";
+    let systemPrompt =
+        "Lu adalah AI Discord bernama Ben Bot. Jawab pakai Bahasa Indonesia santai.";
 
-    // simpan memory
-    user.memory.push({ role: "user", content: text });
-    if (user.memory.length > 12) user.memory.shift();
+    if (persona === 'formal')
+        systemPrompt = "Jawab formal dan profesional dalam Bahasa Indonesia.";
+
+    if (persona === 'funny')
+        systemPrompt = "Jawab lucu, santai, kadang sedikit ngeselin.";
+
+    if (persona === 'friendly')
+        systemPrompt = "Jawab ramah dan santai.";
+
+    user.memory.push({
+        role: "user",
+        content: text
+    });
+
+    if (user.memory.length > 12)
+        user.memory.shift();
 
     try {
-        const res = await axios.post("http://localhost:11434/api/chat", {
-            model: "phi3:mini",
+
+        const completion = await groq.chat.completions.create({
+            model: "llama3-8b-8192",
+
             messages: [
-                { role: "system", content: systemPrompt },
+                {
+                    role: "system",
+                    content: systemPrompt
+                },
                 ...user.memory
             ],
-            stream: false
+
+            temperature: 0.8,
+            max_tokens: 300
         });
 
-        const reply = res.data.message.content;
+        const reply =
+            completion.choices[0].message.content;
 
-        user.memory.push({ role: "assistant", content: reply });
+        user.memory.push({
+            role: "assistant",
+            content: reply
+        });
 
         saveDB();
+
         return reply;
 
     } catch (err) {
-        console.log(err.response?.data || err.message);
-        return "Ollama error 😭 (cek apakah ollama sudah jalan)";
+        console.log(err);
+
+        return "❌ AI error";
     }
 }
 
