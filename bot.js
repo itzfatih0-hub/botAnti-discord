@@ -1776,32 +1776,28 @@ client.on('messageCreate', async msg => {
 
         if (cmd === 'ai') {
     try {
-        await i.deferReply();
+        const text = args.join(' ');
+
+        if (!text) {
+            return msg.reply('Tulis sesuatu dulu.');
+        }
+
+        await msg.channel.sendTyping();
 
         const reply = await chatAIReal(
-            i.user.id,
-            i.options.getString('text'),
+            msg.author.id,
+            text,
             g.personality
         );
 
-        if (i.deferred || i.replied) {
-            return await i.editReply(reply);
-        }
+        return msg.reply(reply);
 
     } catch (err) {
-        console.log('AI Slash Error:', err);
+        console.log('Prefix AI Error:', err);
 
-        if (!i.replied && !i.deferred) {
-            return i.reply({
-                content: '❌ AI error',
-                ephemeral: true
-            }).catch(() => {});
-        }
-
-        if (i.deferred) {
-            return i.editReply('❌ AI error').catch(() => {});
-        }
-      }
+        return msg.reply('❌ AI error').catch(() => {});
+    }
+}
 
         if (cmd === 'leaderboard') {
 
