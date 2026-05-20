@@ -3,6 +3,10 @@ const axios = require('axios');
 const fs = require('fs');
 const express = require('express');
 const OpenAI = require('openai');
+const groq = new OpenAI({
+    apiKey: process.env.GROQ_API_KEY,
+    baseURL: "https://api.groq.com/openai/v1"
+});
 const path = require('path');
 const SHOP_ITEMS = {
     laptop: {
@@ -179,11 +183,6 @@ function escapeHtml(str = '') {
         .replace(/"/g, '&quot;')
         .replace(/'/g, '&#39;');
 }
-
-const groq = new OpenAI({
-    apiKey: process.env.GROQ_API_KEY,
-    baseURL: "https://api.groq.com/openai/v1"
-});
 
 async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
