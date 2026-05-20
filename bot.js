@@ -1801,6 +1801,7 @@ client.on('messageCreate', async msg => {
         if (i.deferred) {
             return i.editReply('❌ AI error').catch(() => {});
         }
+      }
 
         if (cmd === 'leaderboard') {
 
