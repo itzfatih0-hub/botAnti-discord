@@ -2132,14 +2132,4 @@ client.on('messageCreate', async msg => {
     }
 });
 
-client.on('error', console.error);
-
-process.on('unhandledRejection', err => {
-    console.log('Unhandled Rejection:', err);
-});
-
-process.on('uncaughtException', err => {
-    console.log('Uncaught Exception:', err);
-});
-
 client.login(process.env.TOKEN);
