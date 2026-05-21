@@ -187,10 +187,7 @@ function escapeHtml(str = '') {
 async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
 
-    let systemPrompt = "Kamu adalah AI assistant yang natural, pintar, santai, ramah,
-dan menjawab seperti ChatGPT modern.
-Gunakan bahasa user.
-Jangan terlalu formal. Jawab pakai Bahasa Indonesia";
+    let systemPrompt = "Kamu adalah AI Discord yang santai, pintar, dan membantu, Mirip ChatGPT. Jawab pakai Bahasa Indonesia";
     if (persona === 'formal') systemPrompt = "Kamu AI formal dan profesional. Jawab pakai Bahasa Indonesia";
     if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas. Jawab pakai Bahasa Indonesia";
     if (persona === 'friendly') systemPrompt = "Kamu AI ramah dan santai. Jawab pakai Bahasa Indonesia";
