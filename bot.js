@@ -94,7 +94,7 @@ function getUser(id) {
             recentMessages: [],
             spam: 0,
             warns: 0,
-            inventory: [],
+            inventory: {},
             afk: null
         };
     }
@@ -102,7 +102,7 @@ function getUser(id) {
     db.users[id].memory ??= [];
     db.users[id].spam ??= 0;
     db.users[id].warns ??= 0;
-    db.users[id].inventory ??= [];
+    db.users[id].inventory ??= {};
     db.users[id].afk ??= null;
     return db.users[id];
 }
@@ -1097,6 +1097,42 @@ function buildCommands() {
                .setDescription('Reason afk')
                .setRequired(false)
     ),
+
+    new SlashCommandBuilder()
+    .setName('shop')
+    .setDescription('Lihat shop'),
+
+    new SlashCommandBuilder()
+       .setName('buy')
+       .setDescription('Beli item')
+       .addStringOption(o =>
+        o.setName('item')
+        .setDescription('Nama item')
+        .setRequired(true)
+    )
+    .addIntegerOption(o =>
+        o.setName('amount')
+        .setDescription('Jumlah')
+        .setRequired(true)
+    ),
+
+     new SlashCommandBuilder()
+       .setName('inventory')
+       .setDescription('Lihat inventory'),
+
+    new SlashCommandBuilder()
+       .setName('sell')
+       .setDescription('Jual item')
+       .addStringOption(o =>
+         o.setName('item')
+           .setDescription('Nama item')
+           .setRequired(true)
+      )
+       .addIntegerOption(o =>
+          o.setName('amount')
+          .setDescription('Jumlah')
+          .setRequired(true)
+    ),
     ];
 }
 
@@ -1242,6 +1278,10 @@ client.on('interactionCreate', async i => {
                 '/leaderboard',
                 '/gamble',
                 '/afk',
+                '/shop',
+                '/buy',
+                '/inventory',
+                '/sell',
                 '',
                 '**Moderation**',
                 '/warn',
@@ -1259,6 +1299,112 @@ client.on('interactionCreate', async i => {
             ].join('\n')
         );
     }
+
+     if (i.commandName === 'shop') {
+
+      const text = Object.entries(SHOP_ITEMS)
+          .map(([id, item]) =>
+            `  ${item.name}\n💰 Buy: ${item.price} | Sell: ${item.sell}\nID: \`${id}\``
+          )
+          .join('\n\n');
+
+      return i.reply(`🛒 SHOP\n\n${text}`);
+   }
+
+     if (i.commandName === 'buy') {
+
+    const user = getUser(i.user.id);
+
+    const itemId = i.options.getString('item').toLowerCase();
+    const amount = i.options.getInteger('amount');
+
+    const item = SHOP_ITEMS[itemId];
+
+    if (!item) {
+        return i.reply('❌ Item tidak ditemukan');
+    }
+
+    if (amount <= 0) {
+        return i.reply('❌ Jumlah harus lebih dari 0');
+    }
+
+    const total = item.price * amount;
+
+    if (user.money < total) {
+        return i.reply(`❌ Money tidak cukup\nButuh: ${total}`);
+    }
+
+    user.money -= total;
+
+    user.inventory[itemId] ??= 0;
+    user.inventory[itemId] += amount;
+
+    saveDB();
+
+    return i.reply(
+        `🛒 Berhasil beli ${amount}x ${item.name}\n💰 -${total}`
+    );
+}
+
+     if (i.commandName === 'inventory') {
+
+    const user = getUser(i.user.id);
+
+    const items = Object.entries(user.inventory);
+
+    if (!items.length) {
+        return i.reply('🎒 Inventory kosong');
+    }
+
+    const text = items
+        .map(([id, amount]) => {
+            const item = SHOP_ITEMS[id];
+            return `${item?.name || id} x${amount}`;
+        })
+        .join('\n');
+
+    return i.reply(`🎒 INVENTORY\n\n${text}`);
+}
+
+    if (i.commandName === 'sell') {
+
+    const user = getUser(i.user.id);
+
+    const itemId = i.options.getString('item').toLowerCase();
+    const amount = i.options.getInteger('amount');
+
+    const item = SHOP_ITEMS[itemId];
+
+    if (!item) {
+        return i.reply('❌ Item tidak ditemukan');
+    }
+
+    if (amount <= 0) {
+        return i.reply('❌ Jumlah tidak valid');
+    }
+
+    const have = user.inventory[itemId] || 0;
+
+    if (have < amount) {
+        return i.reply('❌ Item tidak cukup');
+    }
+
+    user.inventory[itemId] -= amount;
+
+    if (user.inventory[itemId] <= 0) {
+        delete user.inventory[itemId];
+    }
+
+    const earn = item.sell * amount;
+
+    user.money += earn;
+
+    saveDB();
+
+    return i.reply(
+        `💸 Berhasil jual ${amount}x ${item.name}\n💰 +${earn}`
+    );
+}
 
      if (i.commandName === 'ai') {
     try {
@@ -1754,6 +1900,10 @@ client.on('messageCreate', async msg => {
                     `${prefix}leaderboard`,
                     `${prefix}gamble`,
                     `${prefix}afk`,
+                    `${prefix}shop`,
+                    `${prefix}buy`,
+                    `${prefix}inventory or inv`,
+                    `${prefix}sell`,
                     ``,
                     `**Moderation**`,
                     `${prefix}warn @user`,
@@ -1773,6 +1923,102 @@ client.on('messageCreate', async msg => {
                 ].join('\n')
             );
         }
+
+        if (cmd === 'shop') {
+
+    const text = Object.entries(SHOP_ITEMS)
+        .map(([id, item]) =>
+            `${item.name}\n💰 Buy: ${item.price} | Sell: ${item.sell}\nID: ${id}`
+        )
+        .join('\n\n');
+
+    return msg.reply(`🛒 SHOP\n\n${text}`);
+}
+
+        if (cmd === 'buy') {
+
+    const itemId = (args[0] || '').toLowerCase();
+    const amount = parseInt(args[1]) || 1;
+
+    const item = SHOP_ITEMS[itemId];
+
+    if (!item) {
+        return msg.reply('❌ Item tidak ditemukan');
+    }
+
+    if (amount <= 0) {
+        return msg.reply('❌ Jumlah tidak valid');
+    }
+
+    const total = item.price * amount;
+
+    if (user.money < total) {
+        return msg.reply(`❌ Money tidak cukup\nButuh: ${total}`);
+    }
+
+    user.money -= total;
+
+    user.inventory[itemId] ??= 0;
+    user.inventory[itemId] += amount;
+
+    saveDB();
+
+    return msg.reply(
+        `🛒 Berhasil beli ${amount}x ${item.name}\n💰 -${total}`
+    );
+}
+
+        if (cmd === 'inventory' || cmd === 'inv') {
+
+    const items = Object.entries(user.inventory);
+
+    if (!items.length) {
+        return msg.reply('🎒 Inventory kosong');
+    }
+
+    const text = items
+        .map(([id, amount]) => {
+            const item = SHOP_ITEMS[id];
+            return `${item?.name || id} x${amount}`;
+        })
+        .join('\n');
+
+    return msg.reply(`🎒 INVENTORY\n\n${text}`);
+}
+
+        if (cmd === 'sell') {
+
+    const itemId = (args[0] || '').toLowerCase();
+    const amount = parseInt(args[1]) || 1;
+
+    const item = SHOP_ITEMS[itemId];
+
+    if (!item) {
+        return msg.reply('❌ Item tidak ditemukan');
+    }
+
+    const have = user.inventory[itemId] || 0;
+
+    if (have < amount) {
+        return msg.reply('❌ Item tidak cukup');
+    }
+
+    user.inventory[itemId] -= amount;
+
+    if (user.inventory[itemId] <= 0) {
+        delete user.inventory[itemId];
+    }
+
+    const earn = item.sell * amount;
+
+    user.money += earn;
+
+    saveDB();
+
+    return msg.reply(
+        `💸 Berhasil jual ${amount}x ${item.name}\n💰 +${earn}`
+    );
+}
 
         if (cmd === 'ai') {
     try {
