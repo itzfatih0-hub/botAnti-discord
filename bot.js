@@ -236,7 +236,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
 
     } catch (err) {
         console.log(err.response?.data || err.message);
-        return "AI error 😭";
+        return `❌ ${JSON.stringify(err.response?.data || err.message)}`;
     }
 }
 
