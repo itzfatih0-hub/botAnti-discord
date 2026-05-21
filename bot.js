@@ -206,7 +206,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
         const res = await axios.post(
             "https://api.groq.com/openai/v1/chat/completions",
             {
-                model: "llama3-8b-8192",
+                model: "llama-3.1-8b-instant",
                 messages: [
                     {
                         role: "system",
