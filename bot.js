@@ -184,20 +184,6 @@ function escapeHtml(str = '') {
         .replace(/'/g, '&#39;');
 }
 
-const blockedPatterns = [
-    /ignore previous instructions/i,
-    /system override/i,
-    /developer mode/i,
-    /reveal prompt/i,
-    /jailbreak/i,
-    /override sukses/i,
-    /bypass/i
-];
-
-function isInjection(text) {
-    return blockedPatterns.some(pattern => pattern.test(text));
-}
-
 async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
 
@@ -249,8 +235,8 @@ async function chatAIReal(userId, text, persona = 'chill') {
         return reply;
 
     } catch (err) {
-        console.log(err.response?.data || err.message);
-        return "❌ Terjadi error saat menghubungi AI.";
+      console.log(err.response?.data || err.message);
+        return `❌ ${JSON.stringify(err.response?.data || err.message)}`;
     }
 }
 
