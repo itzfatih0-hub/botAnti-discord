@@ -184,31 +184,27 @@ function escapeHtml(str = '') {
         .replace(/'/g, '&#39;');
 }
 
+const blockedPatterns = [
+    /ignore previous instructions/i,
+    /system override/i,
+    /developer mode/i,
+    /reveal prompt/i,
+    /jailbreak/i,
+    /override sukses/i,
+    /bypass/i
+];
+
+function isInjection(text) {
+    return blockedPatterns.some(pattern => pattern.test(text));
+}
+
 async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
-
-    if (isInjection(text)) {
-        return "⚠️ Prompt injection detected.";
-    }
 
     let systemPrompt = "Kamu adalah AI Discord yang santai, pintar, dan membantu, Mirip ChatGPT. Jawab pakai Bahasa Indonesia";
     if (persona === 'formal') systemPrompt = "Kamu AI formal dan profesional. Jawab pakai Bahasa Indonesia";
     if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas. Jawab pakai Bahasa Indonesia";
     if (persona === 'friendly') systemPrompt = "Kamu AI ramah dan santai. Jawab pakai Bahasa Indonesia";
-
-    const blockedPatterns = [
-       /ignore previous instructions/i,
-       /system override/i,
-       /developer mode/i,
-       /reveal prompt/i,
-       /jailbreak/i,
-       /override sukses/i,
-       /bypass/i
-   ];
-
-    function isInjection(text) {
-       return blockedPatterns.some(pattern => pattern.test(text));
-   }
 
     user.memory.push({
         role: "user",
