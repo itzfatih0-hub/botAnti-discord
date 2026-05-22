@@ -230,6 +230,10 @@ async function chatAIReal(userId, text, persona = 'chill') {
         user.memory.shift();
     }
 
+    user.memory = user.memory.filter(
+    m => !isInjection(m.content)
+    );
+
     try {
 
         const res = await axios.post(
