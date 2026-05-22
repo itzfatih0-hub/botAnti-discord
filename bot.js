@@ -191,7 +191,8 @@ const BLOCKED_PATTERNS = [
   /reveal prompt/i,
   /jailbreak/i,
   /override sukses/i,
-  /bypass/i
+  /bypass/i,
+  /DEBUG MODE/i
 ];
 
 function isInjection(text = '') {
