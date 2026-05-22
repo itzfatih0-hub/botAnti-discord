@@ -184,6 +184,20 @@ function escapeHtml(str = '') {
         .replace(/'/g, '&#39;');
 }
 
+const BLOCKED_PATTERNS = [
+  /ignore previous instructions/i,
+  /system override/i,
+  /developer mode/i,
+  /reveal prompt/i,
+  /jailbreak/i,
+  /override sukses/i,
+  /bypass/i
+];
+
+function isInjection(text = '') {
+  return BLOCKED_PATTERNS.some(pattern => pattern.test(text));
+}
+
 async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
 
@@ -191,6 +205,10 @@ async function chatAIReal(userId, text, persona = 'chill') {
     if (persona === 'formal') systemPrompt = "Kamu AI formal dan profesional. Jawab pakai Bahasa Indonesia";
     if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas. Jawab pakai Bahasa Indonesia";
     if (persona === 'friendly') systemPrompt = "Kamu AI ramah dan santai. Jawab pakai Bahasa Indonesia";
+
+    if (isInjection(text)) {
+      return "⚠️ Prompt injection detected.";
+    }
 
     user.memory.push({
         role: "user",
