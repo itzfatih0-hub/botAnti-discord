@@ -203,7 +203,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
 
     let systemPrompt = `
-   Kamu adalah AI Discord yang santai, pintar, dan membantu.
+   Kamu adalah Ben D Bot AI Discord yang santai, pintar, dan membantu.
    Jawab pakai Bahasa Indonesia.
 
     ATURAN PENTING:
