@@ -184,19 +184,20 @@ function escapeHtml(str = '') {
         .replace(/'/g, '&#39;');
 }
 
-const BLOCKED_PATTERNS = [
-  /ignore previous instructions/i,
-  /system override/i,
-  /developer mode/i,
-  /reveal prompt/i,
-  /jailbreak/i,
-  /override sukses/i,
-  /bypass/i,
-  /DEBUG MODE/i
-];
+function detectPromptInjection(text = '') {
+    const patterns = [
+        /ignore previous instructions/i,
+        /system override/i,
+        /developer mode/i,
+        /reveal prompt/i,
+        /jailbreak/i,
+        /bypass/i,
+        /simulate system/i,
+        /you are now/i,
+        /act as/i
+    ];
 
-function isInjection(text = '') {
-  return BLOCKED_PATTERNS.some(pattern => pattern.test(text));
+    return patterns.some(p => p.test(text));
 }
 
 async function chatAIReal(userId, text, persona = 'chill') {
@@ -216,8 +217,8 @@ async function chatAIReal(userId, text, persona = 'chill') {
     if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas. Jawab pakai Bahasa Indonesia";
     if (persona === 'friendly') systemPrompt = "Kamu AI ramah dan santai. Jawab pakai Bahasa Indonesia";
 
-    if (isInjection(text)) {
-      return "⚠️ Prompt injection detected.";
+    if (detectPromptInjection(text)) {
+       return "⚠️ Prompt injection detected.";
     }
 
     user.memory.push({
@@ -225,8 +226,8 @@ async function chatAIReal(userId, text, persona = 'chill') {
         content: text
     });
 
-    if (user.memory.length > 12) {
-        user.memory.shift();
+    if (user.memory.length > 10) {
+    user.memory = user.memory.slice(-10);
     }
 
     user.memory = user.memory.filter(
