@@ -231,7 +231,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
     }
 
     user.memory = user.memory.filter(
-    m => !isInjection(m.content)
+    m => !detectPromptInjection(m.content)
     );
 
     try {
