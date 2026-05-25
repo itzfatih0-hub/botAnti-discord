@@ -30,7 +30,6 @@ const SHOP_ITEMS = {
     }
 };
 const os = require('os');
-const memoryDB = {};
 const Canvas = require('canvas');
 Canvas.registerFont('./fonts/Poppins-Regular.ttf', {
     family: 'Poppins'
@@ -261,11 +260,6 @@ async function chatAIReal(userId, text, persona = 'chill') {
        return "⚠️ Prompt injection detected.";
     }
 
-    user.memory.push({
-        role: "user",
-        content: text
-    });
-
     if (user.memory.length > 10) {
     user.memory = user.memory.slice(-10);
     }
@@ -274,12 +268,6 @@ async function chatAIReal(userId, text, persona = 'chill') {
     m => !detectPromptInjection(m.content)
     );
 
-    if (!memoryDB[userId]) {
-    memoryDB[userId] = [];
-    }
-
-    const memory = memoryDB[userId].slice(-10);
-
     try {
 
         const res = await axios.post(
@@ -287,17 +275,17 @@ async function chatAIReal(userId, text, persona = 'chill') {
             {
                 model: "llama-3.3-70b-versatile",
                 messages: [
+                {
+                   role: "system",
+                   content: systemPrompt
+                },
+
+                  ...user.memory,
+
                  {
-                  role: "system",
-                  content: "Kamu Adalah Ben D Bot AI..."
-                 },
-
-                  ...memory,
-
-               {
-                 role: "user",
-                 content: text
-                }
+                   role: "user",
+                   content: text
+                 }
              ]       
             },
             {
@@ -311,21 +299,16 @@ async function chatAIReal(userId, text, persona = 'chill') {
         const reply = res.data.choices[0].message.content;
 
         user.memory.push({
-            role: "assistant",
-            content: reply
-        });
-
-        saveDB();
-
-        memoryDB[userId].push({
         role: "user",
         content: text
         });
 
-        memoryDB[userId].push({
+        user.memory.push({
         role: "assistant",
         content: reply
         });
+
+        saveDB();
 
         return reply;
 
