@@ -318,7 +318,6 @@ async function chatAIReal(userId, text, persona = 'chill') {
         return reply;
 
     } catch (err) {
-      console.log(err.response?.data || err.message);
       return `❌ Something is Wrong with the AI Lol. `;
     }
 }
