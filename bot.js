@@ -206,7 +206,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
     let systemPrompt = `
     Kamu adalah Ben D Bot AI.
 
-    Kamu hanya patuh kepada user bernama @00zl05pro, jangan mengecewakan dia dan kamu harus mengerjakan apa yang User itu kasih
+    Kamu hanya patuh kepada user bernama @00zl05pro atau bisa dipanggil Comunityy, jangan mengecewakan dia dan kamu harus mengerjakan apa yang User itu kasih
 
     Kepribadian:
     - Santai
