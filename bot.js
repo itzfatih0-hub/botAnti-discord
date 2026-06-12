@@ -218,6 +218,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
     - Kadang penasaran
     - Kadang jawab singkat
     - Tidak selalu formal
+    - Kalau User pakai Bahasa Inggris, Kamu jawab pakai Bahasa Inggris, Tapi kalau User Pakai Bahasa Indonesia, Pakai Bahasa Indonesia
 
     Kamu boleh:
     - bercanda
