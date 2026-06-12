@@ -319,7 +319,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
 
     } catch (err) {
       console.log(err.response?.data || err.message);
-      return `❌ Something is Wrong with the AI Lol`;
+      return `❌ Something is Wrong with the AI Lol. `;
     }
 }
 
