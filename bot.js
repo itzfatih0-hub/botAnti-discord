@@ -259,7 +259,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
     if (persona === 'friendly') systemPrompt = "Kamu AI ramah dan santai. Jawab pakai Bahasa Indonesia";
 
     if (detectPromptInjection(text)) {
-       return "⚠️ Prompt injection detected.";
+       return "⚠️ I CANT HELP YOU WITH THAT, ARE YOU THINK I AM THE DUMBEST AI?.";
     }
 
     if (user.memory.length > 10) {
