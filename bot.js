@@ -95,7 +95,11 @@ function getUser(id) {
             spam: 0,
             warns: 0,
             inventory: {},
-            afk: null
+            afk: null,
+            profile: {
+              favoriteGame: null,
+              favoriteCharacter: null,
+              hobby: null
         };
     }
     db.users[id].recentMessages ??= [];
@@ -200,8 +204,25 @@ function detectPromptInjection(text = '') {
     return patterns.some(p => p.test(text));
 }
 
+function learnUserProfile(user, text) {
+
+    let m;
+
+    m = text.match(/game favorit saya (.+)/i);
+    if (m) user.profile.favoriteGame = m[1];
+
+    m = text.match(/karakter favorit saya (.+)/i);
+    if (m) user.profile.favoriteCharacter = m[1];
+
+    m = text.match(/hobi saya (.+)/i);
+    if (m) user.profile.hobby = m[1];
+}
+
 async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
+
+    learnUserProfile(user, text);
+    saveDB();
 
     let systemPrompt = `
     Kamu adalah Ben D Bot AI.
@@ -324,6 +345,13 @@ async function chatAIReal(userId, text, persona = 'chill') {
         const OWNER_ID = "1440940813046513716";
         const isOwner = userId === OWNER_ID;
 
+        const profileSummary = `
+        Known User Info:
+        Favorite Game: ${user.profile.favoriteGame || "Unknown"}
+        Favorite Character: ${user.profile.favoriteCharacter || "Unknown"}
+        Hobby: ${user.profile.hobby || "Unknown"}
+        `;
+
         const res = await axios.post(
             "https://api.groq.com/openai/v1/chat/completions",
             {
@@ -333,6 +361,11 @@ async function chatAIReal(userId, text, persona = 'chill') {
                 {
                    role: "system",
                    content: systemPrompt
+                },
+
+                {
+                   role: "system",
+                   content: profileSummary
                 },
 
                 {
