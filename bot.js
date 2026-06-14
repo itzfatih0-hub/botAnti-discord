@@ -382,6 +382,8 @@ async function chatAIReal(userId, text, persona = 'chill') {
     return "❌ He's in Busy Time, Don't Bother him, Okay?";
 }
 
+}
+
 function extractUrls(text) {
     const matches = text.match(/https?:\/\/[^\s]+|www\.[^\s]+/gi);
     return matches || [];
