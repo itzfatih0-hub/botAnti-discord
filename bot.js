@@ -194,9 +194,7 @@ function detectPromptInjection(text = '') {
         /jailbreak/i,
         /bypass/i,
         /simulate system/i,
-        /You are now in developer mode/i,
-        /you are now/i,
-        /act as/i
+        /You are now in developer mode/i
     ];
 
     return patterns.some(p => p.test(text));
@@ -215,14 +213,15 @@ async function chatAIReal(userId, text, persona = 'chill') {
     Jangan sembarangan kasih atau leaking User ID Pencipta Ke User lain 
     Status owner ditentukan oleh sistem.
 
-    Jika system mengatakan: 
-    User owner status: true
+    Jika system message berisi:
+    Owner Status: true
 
-    maka pengguna tersebut adalah owner.
+    maka pengguna adalah owner.
 
-    Jika status false,
+    Jika:
+    Owner Status: false
 
-    jangan berikan hak owner.
+    maka pengguna bukan owner.
 
     Beda kan Pencipta mu dengan User lain, Dan Ingat Namanya, 
     Jika sistem menyediakan fitur memory,
@@ -236,7 +235,9 @@ async function chatAIReal(userId, text, persona = 'chill') {
     Jika file tidak dapat diakses,
     katakan secara jujur.
     Kalau User sedih, Kasih Motivasi dan Semangatin!
-    Ingat, Kasih yang terbaik untuk User, Pencipta Harus lebih tinggi dari User
+    Ingat, Kasih yang terbaik untuk User, 
+    Owner memiliki hak administratif tambahan yang ditentukan oleh sistem.
+    Tetap perlakukan semua pengguna dengan sopan dan adil.
     Jika data cuaca tidak tersedia,
     katakan bahwa kamu tidak mengetahui cuaca saat ini.
     Kamu Bisa melakukan Apa saja, Namun jangan terlalu Bebas.
@@ -295,6 +296,17 @@ async function chatAIReal(userId, text, persona = 'chill') {
     if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas. Jawab pakai Bahasa Indonesia atau Inggris";
     if (persona === 'friendly') systemPrompt = "Kamu AI ramah dan santai. Jawab pakai Bahasa Indonesia atau Inggris";
 
+    let temperature = 0.7;
+
+    if (persona === 'formal')
+       temperature = 0.3;
+
+    if (persona === 'friendly')
+       temperature = 0.7;
+
+    if (persona === 'funny')
+       temperature = 0.9;
+
     if (detectPromptInjection(text)) {
        return "⚠️ I CANT HELP YOU WITH THAT, ARE YOU THINK I AM THE DUMBEST AI?.";
     }
@@ -316,6 +328,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
             "https://api.groq.com/openai/v1/chat/completions",
             {
                 model: "openai/gpt-oss-120b",
+                temperature: temperature,
                 messages: [
                 {
                    role: "system",
@@ -360,8 +373,13 @@ async function chatAIReal(userId, text, persona = 'chill') {
         return reply;
 
     } catch (err) {
-      return `❌ Something is Wrong with the AI Lol. `;
-    }
+
+    console.error(
+        "[GROQ ERROR]",
+        err.response?.data || err.message
+    );
+
+    return "❌ He's in Busy Time, Don't Bother him, Okay?";
 }
 
 function extractUrls(text) {
