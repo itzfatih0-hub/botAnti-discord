@@ -1608,6 +1608,12 @@ if (i.commandName === 'ai') {
     try {
         await i.deferReply();
 
+        const reply = await chatAIReal(
+        msg.author.id,
+        aiInput,
+        g.personality
+        );
+
         let aiInput = text;
 
         const attachment = msg.attachments.first();
@@ -1626,12 +1632,6 @@ if (i.commandName === 'ai') {
              fileContent;
           }
        }
-
-       const reply = await chatAIReal(
-       msg.author.id,
-       aiInput,
-       g.personality
-       );
 
         if (i.deferred || i.replied) {
             return await i.editReply(reply);
