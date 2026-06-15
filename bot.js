@@ -100,8 +100,9 @@ function getUser(id) {
               favoriteGame: null,
               favoriteCharacter: null,
               hobby: null
-        }
-    },
+          }
+        },
+    }
     db.users[id].recentMessages ??= [];
     db.users[id].memory ??= [];
     db.users[id].spam ??= 0;
