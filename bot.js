@@ -189,6 +189,24 @@ function escapeHtml(str = '') {
         .replace(/'/g, '&#39;');
 }
 
+async function readAttachment(url) {
+
+    try {
+
+        const res = await axios.get(url, {
+            responseType: "text"
+        });
+
+        return res.data;
+
+    } catch (err) {
+
+        console.log(err);
+
+        return null;
+    }
+}
+
 function detectPromptInjection(text = '') {
     const patterns = [
         /ignore previous instructions/i,
@@ -333,8 +351,10 @@ async function chatAIReal(userId, text, persona = 'chill') {
        return "⚠️ I CANT HELP YOU WITH THAT, ARE YOU THINK I AM THE DUMBEST AI?.";
     }
 
-    if (user.memory.length > 10) {
-    user.memory = user.memory.slice(-10);
+    const MAX_MEMORY = 20;
+
+    if (user.memory.length > MAX_MEMORY) {
+       user.memory = user.memory.slice(-MAX_MEMORY);
     }
 
     user.memory = user.memory.filter(
@@ -1588,11 +1608,30 @@ if (i.commandName === 'ai') {
     try {
         await i.deferReply();
 
-        const reply = await chatAIReal(
-            i.user.id,
-            i.options.getString('text'),
-            g.personality
-        );
+        let aiInput = text;
+
+        const attachment = msg.attachments.first();
+
+        if (attachment) {
+
+           const fileContent =
+              await readAttachment(
+                 attachment.url
+              );
+
+           if (fileContent) {
+
+             aiInput +=
+             "\n\nFILE CONTENT:\n" +
+             fileContent;
+          }
+       }
+
+       const reply = await chatAIReal(
+       msg.author.id,
+       aiInput,
+       g.personality
+       );
 
         if (i.deferred || i.replied) {
             return await i.editReply(reply);
@@ -1609,7 +1648,7 @@ if (i.commandName === 'ai') {
         }
 
         if (i.deferred) {
-            return i.editReply('❌ AI error').catch(() => {});
+            return i.editReply('❌  He's in Busy Time, Don't Bother him, Okay?').catch(() => {});
         }
     }
 }
