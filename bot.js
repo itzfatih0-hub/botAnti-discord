@@ -102,7 +102,7 @@ function getUser(id) {
               hobby: null
            }
         }
-    },
+    };
     db.users[id].recentMessages ??= [];
     db.users[id].memory ??= [];
     db.users[id].spam ??= 0;
