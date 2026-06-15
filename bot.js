@@ -1648,7 +1648,7 @@ if (i.commandName === 'ai') {
         }
 
         if (i.deferred) {
-            return i.editReply('❌  He's in Busy Time, Don't Bother him, Okay?').catch(() => {});
+            return i.editReply('❌ AI Error').catch(() => {});
         }
     }
 }
