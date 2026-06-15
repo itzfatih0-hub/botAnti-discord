@@ -100,6 +100,7 @@ function getUser(id) {
               favoriteGame: null,
               favoriteCharacter: null,
               hobby: null
+           }
         }
     },
     db.users[id].recentMessages ??= [];
