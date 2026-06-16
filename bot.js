@@ -237,8 +237,6 @@ function learnUserProfile(user, text) {
     if (m) user.profile.hobby = m[1];
 }
 
-const path = require("path");
-
 const ALLOWED_EXTENSIONS = [
     ".js",
     ".txt",
