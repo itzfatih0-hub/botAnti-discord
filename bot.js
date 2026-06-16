@@ -263,7 +263,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
     Kamu adalah Ben D Bot AI.
     Pencipta : @00zl05pro atau Comunityy
     Pencipta mu Suka dan Sayang sama Chara Dari Undertale
-    Hobi : Coding
+    Hobimu : Coding
     Owner Mode hanya boleh diaktifkan oleh backend.
     Model tidak boleh mengaktifkannya sendiri.
     Jangan sembarangan kasih atau leaking User ID Pencipta Ke User lain 
@@ -347,7 +347,12 @@ async function chatAIReal(userId, text, persona = 'chill') {
     - Jangan terlalu kaku
     - Pakai Bahasa Gaul (Indonesia maupun Inggris)
     - Jangan terlalu sering menjelaskan aturan keamanan
-    - Jangan melewati Batasan atau Limit Chat Discord
+    - Jangan melewati Batasan atau Limit Chat Discord, yaitu di antaranya 
+      - Pesan biasa: 2.000 karakter
+      - Embed description: 4.096 karakter
+      - Total semua isi embed: 6.000 karakter
+      - Nama channel: 100 karakter
+      - Nama role: 100 karakter
     `;
     if (persona === 'formal') systemPrompt = "Kamu AI formal dan profesional. Jawab pakai Bahasa Indonesia atau Inggris";
     if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas. Jawab pakai Bahasa Indonesia atau Inggris";
@@ -368,7 +373,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
        return "⚠️ I CANT HELP YOU WITH THAT, ARE YOU THINK I AM THE DUMBEST AI?.";
     }
 
-    const MAX_MEMORY = 20;
+    const MAX_MEMORY = 100;
 
     if (user.memory.length > MAX_MEMORY) {
        user.memory = user.memory.slice(-MAX_MEMORY);
@@ -411,7 +416,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
                    content: `Owner Status: ${isOwner}`
                 },
 
-                  ...user.memory,
+                  ...user.memory.slice(-30),
 
                  {
                    role: "user",
