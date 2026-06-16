@@ -237,6 +237,24 @@ function learnUserProfile(user, text) {
     if (m) user.profile.hobby = m[1];
 }
 
+const path = require("path");
+
+const ALLOWED_EXTENSIONS = [
+    ".js",
+    ".txt",
+    ".md",
+    ".json",
+    ".html",
+    ".css",
+    ".py",
+    ".log"
+];
+
+function isAllowedFile(fileName) {
+    const ext = path.extname(fileName).toLowerCase();
+    return ALLOWED_EXTENSIONS.includes(ext);
+}
+
 async function chatAIReal(userId, text, persona = 'chill') {
     const user = getUser(userId);
 
@@ -1298,6 +1316,16 @@ function buildCommands() {
     ),
 
     new SlashCommandBuilder()
+    .setName('read')
+    .setDescription('Analisis file')
+    .addAttachmentOption(option =>
+        option
+            .setName('file')
+            .setDescription('Upload file')
+            .setRequired(true)
+    )
+
+    new SlashCommandBuilder()
     .setName('shop')
     .setDescription('Lihat shop'),
 
@@ -1479,6 +1507,7 @@ client.on('interactionCreate', async i => {
                 '/afk',
                 '/shop',
                 '/buy',
+                '/read',
                 '/inventory',
                 '/sell',
                 '',
@@ -1543,6 +1572,28 @@ client.on('interactionCreate', async i => {
     return i.reply(
         `🛒 Berhasil beli ${amount}x ${item.name}\n💰 -${total}`
     );
+}
+
+     if (i.commandName === 'read') {
+
+    const attachment =
+        i.options.getAttachment('file');
+
+    const fileContent =
+        await readAttachment(
+            attachment.url
+        );
+
+    await i.deferReply();
+
+    const reply =
+        await chatAIReal(
+            i.user.id,
+            `Analisis file berikut:\n\n${fileContent}`,
+            g.personality
+        );
+
+    return i.editReply(reply);
 }
 
      if (i.commandName === 'inventory') {
@@ -2120,6 +2171,7 @@ client.on('messageCreate', async msg => {
                     `${prefix}afk`,
                     `${prefix}shop`,
                     `${prefix}buy`,
+                    `${prefix}read (File)`,
                     `${prefix}inventory or inv`,
                     `${prefix}sell`,
                     ``,
@@ -2202,6 +2254,28 @@ client.on('messageCreate', async msg => {
         .join('\n');
 
     return msg.reply(`🎒 INVENTORY\n\n${text}`);
+}
+     
+        if (cmd === "read") {
+
+    const fileName = args[0];
+
+    if (!fileName) {
+        return msg.reply("Contoh: !read bot.js");
+    }
+
+    if (!isAllowedFile(fileName)) {
+        return msg.reply(
+            "❌ Tipe file tidak diizinkan."
+        );
+    }
+
+    const content =
+        fs.readFileSync(fileName, "utf8");
+
+    return msg.reply(
+        "File berhasil dibaca."
+    );
 }
 
         if (cmd === 'sell') {
