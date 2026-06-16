@@ -1321,7 +1321,7 @@ function buildCommands() {
             .setName('file')
             .setDescription('Upload file')
             .setRequired(true)
-    )
+    ),
 
     new SlashCommandBuilder()
     .setName('shop')
