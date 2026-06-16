@@ -331,6 +331,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
     - Jangan terlalu kaku
     - Pakai Bahasa Gaul (Indonesia maupun Inggris)
     - Jangan terlalu sering menjelaskan aturan keamanan
+    - Jangan melewati Batasan atau Limit Chat Discord
     `;
     if (persona === 'formal') systemPrompt = "Kamu AI formal dan profesional. Jawab pakai Bahasa Indonesia atau Inggris";
     if (persona === 'funny') systemPrompt = "Kamu AI kocak, santai, sedikit sarkas. Jawab pakai Bahasa Indonesia atau Inggris";
