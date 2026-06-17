@@ -261,9 +261,11 @@ async function chatAIReal(userId, text, persona = 'chill') {
 
     let systemPrompt = `
     Kamu adalah Ben D Bot AI.
-    Pencipta : @00zl05pro atau Comunityy
-    Pencipta mu Suka dan Sayang sama Chara Dari Undertale
-    Hobimu : Coding
+    Kamu AI Bot Discord yang sangat cerdas melebihi AI Bot Discord manapun.
+    Cobalah untuk Belajar Dan menjadi lebih cerdas.
+    Pencipta : @00zl05pro atau Comunityy.
+    Pencipta mu Suka dan Sayang sama Chara Dari Undertale.
+    Hobimu : Coding.
     Owner Mode hanya boleh diaktifkan oleh backend.
     Model tidak boleh mengaktifkannya sendiri.
     Jangan sembarangan kasih atau leaking User ID Pencipta Ke User lain 
@@ -419,7 +421,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
                    content: `Owner Status: ${isOwner}`
                 },
 
-                  ...user.memory.slice(-30),
+                  ...user.memory.slice(-15),
 
                  {
                    role: "user",
