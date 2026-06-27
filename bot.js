@@ -453,7 +453,7 @@ async function chatAIReal(userId, text, persona = 'chill') {
                    content: `Owner Status: ${isOwner}`
                 },
 
-                  ...user.memory.slice(-15),
+                  ...user.memory.slice(-30),
 
                  {
                    role: "user",
